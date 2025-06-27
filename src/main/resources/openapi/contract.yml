@@ -1,0 +1,508 @@
+openapi: 3.0.1
+info:
+  title: ZAD Rest API
+  description: |
+    ZAD - Software Engineer Assignment
+    Assuming that Authentication has been applied before
+  license:
+    name: Apache 2.0
+  version: '1'
+servers:
+  - url: http://localhost:8081
+    description: Generated server url
+paths:
+  /api/zad/user:
+    post:
+      tags:
+        - user-controller
+      operationId: doCreateUser
+      summary: Create new user with the given email
+      description: Create new user with the given email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/zad/account:
+    post:
+      tags:
+        - account-controller
+      operationId: doCreateAccountForUser
+      summary: |
+        Create new account for the given user and given account type
+      description: |
+        Create new account for the given user and given account type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    get:
+      parameters:
+        - in: query
+          name: user_id
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 256
+          required: true
+          description: User ID
+        - in: query
+          name: currency_type
+          schema:
+            $ref: '#/components/schemas/AppCurrencyCode'
+          required: true
+          description: Currency Type
+      tags:
+        - account-controller
+      operationId: doGetUserAccountsWithSpecifiedCurrency
+      summary: |
+        Return user account's balance in given currency
+      description: |
+        Return user account's balance in given currency
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/zad/account/exchange:
+    post:
+      tags:
+        - transaction-controller
+      operationId: doExchangeBetweenAccounts
+      summary: |
+        Send money from one account to another with specified currency
+      description: |
+        Send money from one account to another with specified currency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/zad/transaction/withdraw:
+    post:
+      tags:
+        - transaction-controller
+      operationId: doWithdrawOperation
+      summary: |
+        Reducing the amount of money in the user’s account
+      description: |
+        Reducing the amount of money in the user’s account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/zad/transaction/deposit:
+    post:
+      tags:
+        - transaction-controller
+      operationId: doDepositOperation
+      summary: |
+        Adding money to the user’s account
+      description: |
+        Adding money to the user’s account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/zad/transaction/status:
+    get:
+      parameters:
+        - in: query
+          name: transaction_id
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 256
+          required: true
+          description: Transaction ID
+
+      tags:
+        - transaction-controller
+      operationId: doGetTransactionStatus
+      summary: |
+        Return user account's balance in given currency
+      description: |
+        Return user account's balance in given currency
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  schemas:
+    ProblemDetail:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        properties:
+          type: object
+          additionalProperties:
+            type: object
+    BasePageableResponse:
+      type: object
+      required:
+        - totalElements
+        - totalPages
+        - page
+        - size
+        - sort
+        - number
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+        number:
+          type: integer
+          format: int32
+    BaseApiResponse:
+      type: object
+      required:
+        - isSuccess
+        - httpStatusCode
+      properties:
+        isSuccess:
+          type: boolean
+        errorResponses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProblemDetail'
+        httpStatusCode:
+          type: integer
+          format: int32
+    ApiErrorResponse:
+      type: object
+      required:
+        - isSuccess
+        - httpStatusCode
+      properties:
+        response:
+          type: object
+        isSuccess:
+          type: boolean
+        errorResponses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProblemDetail'
+        httpStatusCode:
+          type: integer
+          format: int32
+    AppTextValue:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string
+          minLength: 1
+          maxLength: 256
+    EmailTextValue:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 256
+    AppCurrencyCode:
+      type: string
+      enum:
+        - TRY
+        - USD
+    ApiAccountType:
+      type: string
+      enum:
+        - TRY
+        - USD
+    AppTransactionStatus:
+      type: string
+      enum:
+        - UNKNOWN
+        - WAITING
+        - SUCCESS
+        - FAIL
+    AppExchangeType:
+      type: string
+      enum:
+        - UNKNOWN
+        - USD-TRY
+        - TRY-USD
+    AppLanguage:
+      type: string
+      enum:
+        - en
+        - tr
+    AppMoney:
+      type: object
+      required:
+        - money
+        - currencyType
+      properties:
+        money:
+          type: number
+          format: currency
+        currencyType:
+          $ref: '#/components/schemas/AppCurrencyCode'
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailTextValue'
+    CreateAccountRequest:
+      type: object
+      required:
+        - userId
+        - accountType
+      properties:
+        userId:
+          $ref: '#/components/schemas/AppTextValue'
+        accountType:
+          $ref: '#/components/schemas/ApiAccountType'
+    WithdrawRequest:
+      type: object
+      required:
+        - userId
+        - accountId
+        - money
+      properties:
+        userId:
+          $ref: '#/components/schemas/AppTextValue'
+        accountId:
+          $ref: '#/components/schemas/AppTextValue'
+        money:
+          $ref: '#/components/schemas/AppMoney'
+    DepositRequest:
+      type: object
+      required:
+        - userId
+        - accountId
+        - money
+      properties:
+        userId:
+          $ref: '#/components/schemas/AppTextValue'
+        accountId:
+          $ref: '#/components/schemas/AppTextValue'
+        money:
+          $ref: '#/components/schemas/AppMoney'
+    ExchangeRequest:
+      type: object
+      required:
+        - fromUserId
+        - fromAccountId
+        - money
+        - toAccountId
+      properties:
+        fromUserId:
+          $ref: '#/components/schemas/AppTextValue'
+        fromAccountId:
+          $ref: '#/components/schemas/AppTextValue'
+        money:
+          $ref: '#/components/schemas/AppMoney'
+        toAccountId:
+          $ref: '#/components/schemas/AppTextValue'
+    UserResponse:
+      type: object
+      required:
+        - email
+        - userId
+      properties:
+        email:
+          type: string
+        userId:
+          type: string
+    UserApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseApiResponse'
+        - type: object
+          required:
+            - response
+          properties:
+            response:
+              $ref: '#/components/schemas/UserResponse'
+    AccountResponse:
+      type: object
+      required:
+        - accountIds
+        - totalBalance
+      properties:
+        accountIds:
+          type: array
+          items:
+            type: string
+        totalBalance:
+          $ref: '#/components/schemas/AppMoney'
+    AccountApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseApiResponse'
+        - type: object
+          required:
+            - response
+          properties:
+            response:
+              $ref: '#/components/schemas/AccountResponse'
+    TransactionResponse:
+      type: object
+      required:
+        - accountId
+        - transactionId
+        - transactionStatus
+        - amount
+      properties:
+        accountId:
+          type: string
+        transactionId:
+          type: string
+        transactionStatus:
+          $ref: '#/components/schemas/AppTransactionStatus'
+        amount:
+          $ref: '#/components/schemas/AppMoney'
+    TransactionApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseApiResponse'
+        - type: object
+          required:
+            - response
+          properties:
+            response:
+              $ref: '#/components/schemas/TransactionResponse'
+    ExchangeResponse:
+      type: object
+      required:
+        - exchangeId
+        - exchangeType
+        - amount
+        - expirationTime
+      properties:
+        exchangeId:
+          type: string
+        exchangeType:
+          $ref: '#/components/schemas/AppExchangeType'
+        amount:
+          type: number
+          format: currency
+        expirationTime:
+          type: string
+          format: date-time
+    ExchangeApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseApiResponse'
+        - type: object
+          required:
+            - response
+          properties:
+            response:
+              $ref: '#/components/schemas/ExchangeResponse'

@@ -1,0 +1,40 @@
+spring:
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+  application:
+    name: zad-demo-case
+  main:
+    allow-circular-references: false
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: true
+      jdbc:
+        schema-initialization:
+          enabled: false
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/example_db_starter}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+  flyway:
+    enabled: true
+  messages:
+    basename: i18n/messages
+  jpa:
+    defer-datasource-initialization: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+
+app:
+  scheduler:
+    process-waiting-transactions:  '*/5 * * * * *'  ## every 5 seconds
+  kafka:
+    notificationGroupId: zad-transaction-notification-id
+    groupId: zad-demo-case-group-id
+    bootstrapServers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    transactionTopic: transaction-topic
+
+
